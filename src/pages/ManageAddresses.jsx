@@ -72,21 +72,25 @@ export default function ManageAddresses() {
     if (!validateForm()) return
 
     if (editingId) {
-      const result = updateAddress(editingId, formData)
-      if (result.success) {
-        setSuccess('Address updated successfully!')
-        setTimeout(resetForm, 1500)
-      } else {
-        setError(result.message)
-      }
+      (async () => {
+        const result = await updateAddress(editingId, formData)
+        if (result.success) {
+          setSuccess('Address updated successfully!')
+          setTimeout(resetForm, 1500)
+        } else {
+          setError(result.message)
+        }
+      })()
     } else {
-      const result = addAddress(formData)
-      if (result.success) {
-        setSuccess('Address added successfully!')
-        setTimeout(resetForm, 1500)
-      } else {
-        setError(result.message)
-      }
+      (async () => {
+        const result = await addAddress(formData)
+        if (result.success) {
+          setSuccess('Address added successfully!')
+          setTimeout(resetForm, 1500)
+        } else {
+          setError(result.message)
+        }
+      })()
     }
   }
 
@@ -108,24 +112,28 @@ export default function ManageAddresses() {
 
   const handleDelete = (addressId) => {
     if (window.confirm('Are you sure you want to delete this address?')) {
-      const result = deleteAddress(addressId)
-      if (result.success) {
-        setSuccess('Address deleted successfully!')
-        setTimeout(() => setSuccess(''), 1500)
-      } else {
-        setError(result.message)
-      }
+      (async () => {
+        const result = await deleteAddress(addressId)
+        if (result.success) {
+          setSuccess('Address deleted successfully!')
+          setTimeout(() => setSuccess(''), 1500)
+        } else {
+          setError(result.message)
+        }
+      })()
     }
   }
 
   const handleSetPrimary = (addressId) => {
-    const result = setPrimaryAddress(addressId)
-    if (result.success) {
-      setSuccess('Primary address updated!')
-      setTimeout(() => setSuccess(''), 1500)
-    } else {
-      setError(result.message)
-    }
+    (async () => {
+      const result = await setPrimaryAddress(addressId)
+      if (result.success) {
+        setSuccess('Primary address updated!')
+        setTimeout(() => setSuccess(''), 1500)
+      } else {
+        setError(result.message)
+      }
+    })()
   }
 
   return (
@@ -307,7 +315,7 @@ export default function ManageAddresses() {
                       ✏️ Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(address.id)}
+                      onClick={() => handleDelete(address._id)}
                       className="btn-action btn-delete"
                       title="Delete address"
                     >

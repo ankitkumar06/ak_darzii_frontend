@@ -14,6 +14,7 @@ import SignUp from '../pages/SignUp'
 import Profile from '../pages/Profile'
 import EditProfile from '../pages/EditProfile'
 import ManageAddresses from '../pages/ManageAddresses'
+import Bookmarks from '../pages/Bookmarks'
 import ForgotPassword from '../pages/ForgotPassword'
 import ResetPassword from '../pages/ResetPassword'
 
@@ -77,6 +78,7 @@ const AppContent = ({ cart, setCart }) => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/manage-addresses" element={<ManageAddresses />} />
+          <Route path="/bookmarks" element={<Bookmarks />} />
           <Route
             path="/cart"
             element={

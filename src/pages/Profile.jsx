@@ -57,6 +57,9 @@ export default function Profile() {
           <Link to="/manage-addresses">
             <button className="action-btn">📍 Manage Addresses</button>
           </Link>
+          <Link to="/bookmarks">
+            <button className="action-btn">❤️ My Bookmarks</button>
+          </Link>
         </div>
 
         {/* Profile Details */}

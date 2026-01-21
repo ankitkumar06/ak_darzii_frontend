@@ -3,10 +3,13 @@ import { Link, useParams } from 'react-router-dom'
 import PRODUCTS from '../data/products'
 import Banner from '../components/Banner'
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'
 
 export default function ProductList({ onAddToCart }) {
   const { category } = useParams()
+  const { user, addBookmark, removeBookmark, checkBookmark } = useAuth()
   const [products, setProducts] = useState([])
+  const [bookmarkedProducts, setBookmarkedProducts] = useState(new Set())
 
  useEffect(() => {
   const fetchProducts = async () => {
@@ -30,14 +33,32 @@ export default function ProductList({ onAddToCart }) {
     ? products.filter(p => p.category === category)
     : products
 
-    //  const [products, setProducts] = useState([]);
-  //    useEffect(() => {
-  //   const params = new URLSearchParams();
-  //   if (category) params.set('category', category);
-  //   fetch(`/api/products?${params.toString()}`)
-  //     .then(r => r.json())
-  //     .then(setProducts);
-  // }, [category]);
+  const handleBookmarkClick = async (e, product) => {
+    e.preventDefault()
+    
+    if (!user) {
+      alert('Please login to bookmark products')
+      return
+    }
+
+    if (bookmarkedProducts.has(product.id)) {
+      const result = await removeBookmark(product.id)
+      if (result.success) {
+        setBookmarkedProducts(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(product.id)
+          return newSet
+        })
+      }
+    } else {
+      const result = await addBookmark(product)
+      if (result.success) {
+        setBookmarkedProducts(prev => new Set(prev).add(product.id))
+      }
+    }
+  }
+
+  const isBookmarked = (productId) => bookmarkedProducts.has(productId)
 
   return (
     <div>
@@ -53,12 +74,23 @@ export default function ProductList({ onAddToCart }) {
               <p className="product-price">Rs {product.price.toFixed(2)}</p>
             </div>
           </Link>
-          <button
-            className="add-to-cart-btn"
-            onClick={() => onAddToCart(product)}
-          >
-            Add to Cart
-          </button>
+          <div className="product-actions">
+            <button
+              className="add-to-cart-btn"
+              onClick={() => onAddToCart(product)}
+            >
+              Add to Cart
+            </button>
+            {user && (
+              <button
+                className={`bookmark-btn ${isBookmarked(product.id) ? 'bookmarked' : ''}`}
+                onClick={(e) => handleBookmarkClick(e, product)}
+                title={isBookmarked(product.id) ? 'Remove bookmark' : 'Add bookmark'}
+              >
+                {isBookmarked(product.id) ? '❤️' : '🤍'}
+              </button>
+            )}
+          </div>
         </div>
       ))}
 

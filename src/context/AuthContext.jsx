@@ -3,30 +3,9 @@ import { toast } from '../utils/toast'
 
 const AuthContext = createContext()
 
-// Store token in memory
-let authToken = null
-
-// Helper to get token from localStorage
-const getStoredToken = () => {
-  try {
-    return localStorage.getItem('authToken')
-  } catch (error) {
-    return null
-  }
-}
-
-// Helper to save token to localStorage
-const saveToken = (token) => {
-  try {
-    if (token) {
-      localStorage.setItem('authToken', token)
-    } else {
-      localStorage.removeItem('authToken')
-    }
-  } catch (error) {
-    console.error('Failed to save token:', error)
-  }
-}
+// Note: authToken is stored as httpOnly cookie by the server
+// JavaScript cannot access httpOnly cookies (security feature)
+// Browser automatically sends it with credentials: 'include'
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
@@ -35,35 +14,25 @@ export const AuthProvider = ({ children }) => {
   // Check if user is authenticated on app load
   useEffect(() => {
     const checkAuth = async () => {
-      // Get token from localStorage if available
-      const storedToken = getStoredToken()
-      
-      if (storedToken) {
-        authToken = storedToken
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${authToken}`
-            }
-          })
-
-          if (response.ok) {
-            const data = await response.json()
-            setUser(data.user)
-          } else {
-            // Token is invalid or expired
-            authToken = null
-            saveToken(null)
-            setUser(null)
+      try {
+        // Browser automatically sends httpOnly cookie with credentials: 'include'
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
           }
-        } catch (error) {
-          console.error('Auth check failed:', error)
-          authToken = null
-          saveToken(null)
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setUser(data.user)
+        } else {
           setUser(null)
         }
+      } catch (error) {
+        console.error('Auth check failed:', error)
+        setUser(null)
       }
       setIsLoading(false)
     }
@@ -75,6 +44,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/signup`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -94,9 +64,7 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: data.message || 'Signup failed' }
       }
 
-      // Store token in memory and localStorage
-      authToken = data.token
-      saveToken(authToken)
+      // Token is already set as httpOnly cookie by server
       setUser(data.user)
       toast.success(data.message || 'Account created successfully!')
 
@@ -111,6 +79,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/signin`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -127,9 +96,7 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: data.message || 'Invalid email or password' }
       }
 
-      // Store token in memory and localStorage
-      authToken = data.token
-      saveToken(authToken)
+      // Token is already set as httpOnly cookie by server
       setUser(data.user)
       toast.success(data.message || 'Logged in successfully!')
 
@@ -140,9 +107,19 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const signOut = () => {
-    authToken = null
-    saveToken(null)
+  const signOut = async () => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+    
     setUser(null)
     toast.success('Logged out successfully!')
   }
@@ -152,9 +129,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/update-profile/${user.id}`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify(updates)
         })
@@ -169,9 +146,9 @@ export const AuthProvider = ({ children }) => {
         // Fetch updated user data
         const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
           method: 'GET',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           }
         })
 
@@ -196,9 +173,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/add-address/${user.id}`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify(address)
         })
@@ -213,9 +190,9 @@ export const AuthProvider = ({ children }) => {
         // Fetch updated user data
         const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
           method: 'GET',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           }
         })
 
@@ -240,9 +217,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/update-address/${user.id}`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             addressId,
@@ -260,9 +237,9 @@ export const AuthProvider = ({ children }) => {
         // Fetch updated user data
         const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
           method: 'GET',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           }
         })
 
@@ -287,9 +264,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/delete-address/${user.id}/${addressId}`, {
           method: 'DELETE',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           }
         })
 
@@ -303,9 +280,9 @@ export const AuthProvider = ({ children }) => {
         // Fetch updated user data
         const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
           method: 'GET',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           }
         })
 
@@ -330,9 +307,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/set-primary-address/${user.id}`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             addressId
@@ -349,9 +326,9 @@ export const AuthProvider = ({ children }) => {
         // Fetch updated user data
         const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
           method: 'GET',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           }
         })
 
@@ -376,9 +353,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookmark/add`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             productId: product.id,
@@ -412,9 +389,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookmark/remove/${productId}`, {
           method: 'DELETE',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           }
         })
 
@@ -441,9 +418,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookmark/check/${productId}`, {
           method: 'GET',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           }
         })
 
@@ -467,9 +444,9 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookmark/user/${user.id}`, {
           method: 'GET',
+          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
+            'Content-Type': 'application/json'
           }
         })
 

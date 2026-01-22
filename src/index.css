@@ -490,6 +490,7 @@
   font-size: 16px;
   margin-bottom: 30px;
   transition: background 0.3s;
+  width: 100%;
 }
 
 .add-address-btn:hover {
@@ -508,6 +509,7 @@
   margin-top: 0;
   color: #333;
   margin-bottom: 20px;
+  font-size: 24px;
 }
 
 .address-form {
@@ -520,12 +522,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
-}
-
-@media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
 }
 
 .form-group select {
@@ -583,6 +579,7 @@
   border-bottom: 2px solid #667eea;
   padding-bottom: 15px;
   margin-bottom: 20px;
+  font-size: 22px;
 }
 
 .addresses-list {
@@ -601,6 +598,7 @@
   align-items: flex-start;
   gap: 20px;
   transition: all 0.3s;
+  flex-wrap: wrap;
 }
 
 .address-item:hover {
@@ -614,6 +612,7 @@
 
 .address-content {
   flex: 1;
+  min-width: 250px;
 }
 
 .address-header {
@@ -621,6 +620,7 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 .address-header h3 {
@@ -653,6 +653,7 @@
 .address-line {
   margin: 5px 0;
   color: #666;
+  word-break: break-word;
 }
 
 .address-phone {
@@ -667,6 +668,7 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   align-items: flex-start;
+  min-width: 100%;
 }
 
 .btn-action {
@@ -678,6 +680,8 @@
   font-size: 12px;
   transition: all 0.3s;
   white-space: nowrap;
+  flex: 1;
+  min-width: 80px;
 }
 
 .btn-primary {
@@ -687,6 +691,7 @@
 
 .btn-primary:hover {
   background: #764ba2;
+  transform: translateY(-2px);
 }
 
 .btn-edit {
@@ -696,6 +701,7 @@
 
 .btn-edit:hover {
   background: #45a049;
+  transform: translateY(-2px);
 }
 
 .btn-delete {
@@ -705,6 +711,7 @@
 
 .btn-delete:hover {
   background: #da190b;
+  transform: translateY(-2px);
 }
 
 .btn-secondary {
@@ -717,6 +724,7 @@
   font-weight: 600;
   font-size: 16px;
   transition: background 0.3s;
+  width: 100%;
 }
 
 .btn-secondary:hover {
@@ -737,6 +745,266 @@
   margin-bottom: 20px;
   font-size: 14px;
   border-left: 4px solid #3c3;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  border-left: 4px solid #c33;
+}
+
+/* Responsive Design - Tablets (768px and below) */
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 20px 10px;
+  }
+
+  .profile-wrapper {
+    max-width: 100%;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .address-form-section {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .address-form-section h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  .addresses-section {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .addresses-section h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .address-item {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .address-actions {
+    min-width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-action {
+    flex: 1;
+    min-width: 70px;
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
+  .add-address-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .form-buttons {
+    gap: 10px;
+    flex-direction: column;
+  }
+
+  .submit-btn,
+  .btn-cancel {
+    flex: 1;
+    width: 100%;
+  }
+}
+
+/* Responsive Design - Small Phones (576px and below) */
+@media (max-width: 576px) {
+  .profile-container {
+    padding: 15px 5px;
+  }
+
+  .profile-wrapper {
+    max-width: 100%;
+  }
+
+  .profile-wrapper > h1 {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .address-form-section {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+  }
+
+  .address-form-section h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .address-form {
+    gap: 12px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .addresses-section {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+  }
+
+  .addresses-section h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+
+  .addresses-list {
+    gap: 12px;
+  }
+
+  .address-item {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 6px;
+  }
+
+  .address-content {
+    min-width: 100%;
+  }
+
+  .address-header {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .address-header h3 {
+    font-size: 16px;
+  }
+
+  .badge-primary,
+  .badge-type {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+
+  .address-line {
+    margin: 4px 0;
+    font-size: 13px;
+  }
+
+  .address-phone {
+    font-size: 13px;
+    margin-top: 8px;
+  }
+
+  .address-actions {
+    min-width: 100%;
+    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .btn-action {
+    flex: 1;
+    min-width: 60px;
+    padding: 8px 6px;
+    font-size: 10px;
+  }
+
+  .add-address-btn {
+    padding: 10px 15px;
+    font-size: 13px;
+    margin-bottom: 15px;
+  }
+
+  .form-buttons {
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .submit-btn,
+  .btn-cancel {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .profile-footer {
+    margin-top: 20px;
+  }
+
+  .btn-secondary {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .success-message,
+  .error-message {
+    padding: 10px;
+    font-size: 12px;
+    margin-bottom: 15px;
+  }
+}
+
+/* Extra Small Phones (below 360px) */
+@media (max-width: 360px) {
+  .profile-container {
+    padding: 10px;
+  }
+
+  .profile-wrapper > h1 {
+    font-size: 18px;
+  }
+
+  .address-form-section,
+  .addresses-section {
+    padding: 10px;
+  }
+
+  .address-form-section h2,
+  .addresses-section h2 {
+    font-size: 15px;
+  }
+
+  .address-item {
+    padding: 10px;
+  }
+
+  .address-header h3 {
+    font-size: 14px;
+  }
+
+  .address-line {
+    font-size: 12px;
+  }
+
+  .btn-action {
+    font-size: 9px;
+    padding: 6px 4px;
+  }
+
+  .form-group input,
+  .form-group select {
+    font-size: 14px;
+    padding: 8px;
+  }
 }
 
 /* Checkout Styles */

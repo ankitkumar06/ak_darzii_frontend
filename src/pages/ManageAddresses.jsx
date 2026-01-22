@@ -315,7 +315,7 @@ export default function ManageAddresses() {
                       ✏️ Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(address._id)}
+                      onClick={() => handleDelete(address.id)}
                       className="btn-action btn-delete"
                       title="Delete address"
                     >

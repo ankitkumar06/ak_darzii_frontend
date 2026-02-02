@@ -21,7 +21,8 @@ export default function Header({ cartCount, onNavigate }) {
       <div className="header-container">
         <Link to="/" className="logo">
           {/* 🛒 EStore */}
-          <img src="../src/images/logo2.png" alt="ak-darzii" className="logo-image" />
+          {/* <img src="../src/images/logo-v2.png" alt="ak-darzii" className="logo-image" /> */}
+          <img src="/logo-v2.png" alt="ak-darzii" className="logo-image" />
         </Link>
         <SearchBar />
         <div className="nav-buttons">

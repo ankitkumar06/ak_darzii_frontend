@@ -19,8 +19,8 @@ export default function ResetPassword() {
   useEffect(() => {
     const verifyToken = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:5000/auth/verify-reset-token/${token}`
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}/auth/verify-reset-token/${token}`
         )
         setTokenValid(response.data.success)
       } catch (err) {
@@ -76,7 +76,7 @@ export default function ResetPassword() {
 
     try {
       const response = await axios.post(
-        `http://localhost:5000/auth/reset-password/${token}`,
+        `${import.meta.env.VITE_API_BASE_URL}/auth/reset-password/${token}`,
         {
           password: formData.password,
           confirmPassword: formData.confirmPassword

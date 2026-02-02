@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
       try {
         // Browser automatically sends httpOnly cookie with credentials: 'include'
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
-          method: 'GET',
+          method: 'POST',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
@@ -145,7 +145,7 @@ export const AuthProvider = ({ children }) => {
 
         // Fetch updated user data
         const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
-          method: 'GET',
+          method: 'POST',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
@@ -189,7 +189,7 @@ export const AuthProvider = ({ children }) => {
 
         // Fetch updated user data
         const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
-          method: 'GET',
+          method: 'POST',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
@@ -236,7 +236,7 @@ export const AuthProvider = ({ children }) => {
 
         // Fetch updated user data
         const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
-          method: 'GET',
+          method: 'POST',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
@@ -279,7 +279,7 @@ export const AuthProvider = ({ children }) => {
 
         // Fetch updated user data
         const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
-          method: 'GET',
+          method: 'POST',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
@@ -325,7 +325,7 @@ export const AuthProvider = ({ children }) => {
 
         // Fetch updated user data
         const userResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
-          method: 'GET',
+          method: 'POST',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json'

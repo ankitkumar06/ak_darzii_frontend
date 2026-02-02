@@ -10,22 +10,39 @@ export default function ProductList({ onAddToCart }) {
   const { user, addBookmark, removeBookmark, checkBookmark } = useAuth()
   const [products, setProducts] = useState([])
   const [bookmarkedProducts, setBookmarkedProducts] = useState(new Set())
+  const [isLoading, setIsLoading] = useState(true)
+  const [productRatings, setProductRatings] = useState({}) // Store ratings by productId
+  const [userRatings, setUserRatings] = useState({}) // Store user's ratings by productId
+  const [ratingStates, setRatingStates] = useState({}) // Store UI state for rating
 
  useEffect(() => {
   const fetchProducts = async () => {
+    setIsLoading(true)
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/products/getproduct`
       );
       console.log(response.data.data, "response data........");
       setProducts(response.data.data);
+      
+      // Fetch ratings for all products
+      response.data.data.forEach(product => {
+        fetchProductRatings(product.id);
+      });
+      
+      // If user is logged in, fetch their ratings
+      if (user) {
+        fetchUserAllRatings();
+      }
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoading(false)
     }
   };
 
   fetchProducts();
-}, []);
+}, [user]);
 
 
 
@@ -60,39 +77,178 @@ export default function ProductList({ onAddToCart }) {
 
   const isBookmarked = (productId) => bookmarkedProducts.has(productId)
 
+  // Fetch ratings for a specific product
+  const fetchProductRatings = async (productId) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/rating/product/${productId}`,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      if (response.data.success) {
+        setProductRatings(prev => ({
+          ...prev,
+          [productId]: {
+            averageRating: response.data.averageRating,
+            totalRatings: response.data.totalRatings
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching product ratings:', error);
+    }
+  };
+
+  // Fetch all user ratings
+  const fetchUserAllRatings = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/rating/user/all`,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      if (response.data.success) {
+        const ratingsMap = {};
+        response.data.ratings.forEach(r => {
+          ratingsMap[r.productId] = r.rating;
+        });
+        setUserRatings(ratingsMap);
+      }
+    } catch (error) {
+      console.error('Error fetching user ratings:', error);
+    }
+  };
+
+  // Handle rating click
+  const handleRatingClick = async (productId, productName, ratingValue) => {
+    if (!user) {
+      alert('Please login to rate products');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/rating/add`,
+        {
+          productId,
+          productName,
+          rating: ratingValue,
+          review: ''
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        // Update user ratings
+        setUserRatings(prev => ({
+          ...prev,
+          [productId]: ratingValue
+        }));
+
+        // Refresh product ratings
+        fetchProductRatings(productId);
+
+        alert('Rating saved successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving rating:', error);
+      alert('Failed to save rating');
+    }
+  };
+
+  // Render star rating component
+  const renderStarRating = (productId, productName, isInteractive = true) => {
+    const userRating = userRatings[productId];
+    const productRating = productRatings[productId];
+    const avgRating = productRating?.averageRating || 0;
+    const totalRatings = productRating?.totalRatings || 0;
+
+    return (
+      <div className="product-rating">
+        <div className={`stars-container ${isInteractive ? 'interactive' : ''}`}>
+          {[1, 2, 3, 4, 5].map(star => (
+            <span
+              key={star}
+              className={`star ${star <= (userRating || avgRating) ? 'filled' : ''}`}
+              onClick={() => isInteractive && handleRatingClick(productId, productName, star)}
+              style={{
+                cursor: isInteractive ? 'pointer' : 'default',
+                color: star <= (userRating || avgRating) ? '#fbbf24' : '#d1d5db'
+              }}
+            >
+              ★
+            </span>
+          ))}
+        </div>
+        <div className="rating-info">
+          <span className="average-rating">{avgRating.toFixed(1)}</span>
+          <span className="review-count">({totalRatings})</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Banner />
       <div className="products-container">
-      {filtered.map(product => (
-        <div key={product.id} className="product-card">
-          <Link to={`/product/${product.id}`} className="product-link">
-            <div className="product-image">{product.emoji}</div>
-            <div className="product-info">
-              <h3 className="product-name">{product.name}</h3>
-              <p className="product-description">{product.description}</p>
-              <p className="product-price">Rs {product.price.toFixed(2)}</p>
-            </div>
-          </Link>
-          <div className="product-actions">
-            <button
-              className="add-to-cart-btn"
-              onClick={() => onAddToCart(product)}
-            >
-              Add to Cart
-            </button>
-            {user && (
-              <button
-                className={`bookmark-btn ${isBookmarked(product.id) ? 'bookmarked' : ''}`}
-                onClick={(e) => handleBookmarkClick(e, product)}
-                title={isBookmarked(product.id) ? 'Remove bookmark' : 'Add bookmark'}
-              >
-                {isBookmarked(product.id) ? '❤️' : '🤍'}
-              </button>
-            )}
+        {isLoading ? (
+          <div className="loading-container">
+            <p className="loading-text">Loading products...</p>
           </div>
-        </div>
-      ))}
+        ) : filtered.length === 0 ? (
+          <div className="no-products">
+            <p>No products found</p>
+          </div>
+        ) : (
+          filtered.map(product => (
+            <div key={product.id} className="product-card">
+              <div className="product-image-wrapper">
+                <div className="bookmark-icon">
+                  <button
+                    className={`bookmark-btn ${isBookmarked(product.id) ? 'bookmarked' : ''}`}
+                    onClick={(e) => handleBookmarkClick(e, product)}
+                    title={isBookmarked(product.id) ? 'Remove bookmark' : 'Add bookmark'}
+                  >
+                    {isBookmarked(product.id) ? '❤️' : '🤍'}
+                  </button>
+                </div>
+                <Link to={`/product/${product.id}`} className="view-icon">
+                  👁️
+                </Link>
+                <Link to={`/product/${product.id}`} className="product-image">
+                  {product.emoji}
+                </Link>
+              </div>
+              <div className="product-info">
+                <Link to={`/product/${product.id}`} className="product-link">
+                  <h3 className="product-name">{product.name}</h3>
+                </Link>
+                <p className="product-price">Rs {product.price.toFixed(2)}</p>
+                {renderStarRating(product.id, product.name, true)}
+              </div>
+              <button
+                className="add-to-cart-btn"
+                onClick={() => onAddToCart(product)}
+              >
+                Add To Cart
+              </button>
+            </div>
+          ))
+        )}
 
       
       </div>

@@ -50,14 +50,53 @@ export default function Checkout({ cartItems, onClearCart, onBackHome }) {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     // Validate form
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.address || !formData.cardNumber) {
       alert('Please fill all required fields')
       return
     }
-    setOrderPlaced(true)
+
+    // Build order payload
+    const payload = {
+      items: cartItems.map(item => ({ productId: item.id, name: item.name, price: item.price, quantity: item.quantity })),
+      subtotal: total,
+      shipping,
+      tax,
+      total: finalTotal,
+      customer: {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        address: formData.address,
+        city: formData.city,
+        zipCode: formData.zipCode
+      }
+    }
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/orders`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data.message || 'Failed to place order')
+        return
+      }
+
+      // Clear cart and show success
+      onClearCart()
+      setOrderPlaced(true)
+    } catch (err) {
+      console.error('Place order error:', err)
+      alert('Failed to place order')
+    }
   }
 
   if (orderPlaced) {

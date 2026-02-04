@@ -1,22 +1,24 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 
 import Header from '../components/Header'
 import CategoryBar from '../components/CategoryBar'
-import ProductList from '../pages/ProductList'
-import ProductDetail from '../pages/ProductDetail'
-import SearchResults from '../pages/SearchResults'
-import Cart from '../pages/Cart'
-import Checkout from '../pages/Checkout'
-import NotFound from '../pages/NotFound'
-import SignIn from '../pages/SignIn'
-import SignUp from '../pages/SignUp'
-import Profile from '../pages/Profile'
-import EditProfile from '../pages/EditProfile'
-import ManageAddresses from '../pages/ManageAddresses'
-import Bookmarks from '../pages/Bookmarks'
-import ForgotPassword from '../pages/ForgotPassword'
-import ResetPassword from '../pages/ResetPassword'
+
+const ProductList = lazy(() => import('../pages/ProductList'))
+const ProductDetail = lazy(() => import('../pages/ProductDetail'))
+const SearchResults = lazy(() => import('../pages/SearchResults'))
+const Cart = lazy(() => import('../pages/Cart'))
+const Checkout = lazy(() => import('../pages/Checkout'))
+const NotFound = lazy(() => import('../pages/NotFound'))
+const SignIn = lazy(() => import('../pages/SignIn'))
+const SignUp = lazy(() => import('../pages/SignUp'))
+const Profile = lazy(() => import('../pages/Profile'))
+const EditProfile = lazy(() => import('../pages/EditProfile'))
+const ManageAddresses = lazy(() => import('../pages/ManageAddresses'))
+const Bookmarks = lazy(() => import('../pages/Bookmarks'))
+const ForgotPassword = lazy(() => import('../pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('../pages/ResetPassword'))
+const Orders = lazy(() => import('../pages/Orders'))
 
 const AppContent = ({ cart, setCart }) => {
   const navigate = useNavigate()
@@ -64,47 +66,50 @@ const AppContent = ({ cart, setCart }) => {
       />
       <CategoryBar />
       <main className="main-content">
-        <Routes>
-          <Route path="/" element={<ProductList onAddToCart={addToCart} />} />
-          <Route path="/home" element={<ProductList onAddToCart={addToCart} />} />
-          <Route path="/index" element={<ProductList onAddToCart={addToCart} />} />
-          <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
-          <Route path="/category/:category" element={<ProductList onAddToCart={addToCart} />} />
-          <Route path="/search" element={<SearchResults onAddToCart={addToCart} />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/edit-profile" element={<EditProfile />} />
-          <Route path="/manage-addresses" element={<ManageAddresses />} />
-          <Route path="/bookmarks" element={<Bookmarks />} />
-          <Route
-            path="/cart"
-            element={
-              <Cart
-                cartItems={cart}
-                onRemove={removeFromCart}
-                onUpdateQuantity={updateQuantity}
-                onCheckout={() => navigate('/checkout')}
-              />
-            }
-          />
-          <Route
-            path="/checkout"
-            element={
-              <Checkout
-                cartItems={cart}
-                onClearCart={clearCart}
-                onBackHome={() => {
-                  navigate('/')
-                  clearCart()
-                }}
-              />
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<div className="loading">Loading...</div>}>
+          <Routes>
+            <Route path="/" element={<ProductList onAddToCart={addToCart} />} />
+            <Route path="/home" element={<ProductList onAddToCart={addToCart} />} />
+            <Route path="/index" element={<ProductList onAddToCart={addToCart} />} />
+            <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
+            <Route path="/category/:category" element={<ProductList onAddToCart={addToCart} />} />
+            <Route path="/search" element={<SearchResults onAddToCart={addToCart} />} />
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/manage-addresses" element={<ManageAddresses />} />
+            <Route path="/bookmarks" element={<Bookmarks />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route
+              path="/cart"
+              element={
+                <Cart
+                  cartItems={cart}
+                  onRemove={removeFromCart}
+                  onUpdateQuantity={updateQuantity}
+                  onCheckout={() => navigate('/checkout')}
+                />
+              }
+            />
+            <Route
+              path="/checkout"
+              element={
+                <Checkout
+                  cartItems={cart}
+                  onClearCart={clearCart}
+                  onBackHome={() => {
+                    navigate('/')
+                    clearCart()
+                  }}
+                />
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </main>
         {/* </Routes>
       </main> */}

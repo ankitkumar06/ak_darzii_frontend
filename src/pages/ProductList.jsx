@@ -1,6 +1,5 @@
 import { useState,useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import PRODUCTS from '../data/products'
 import Banner from '../components/Banner'
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'
@@ -15,40 +14,70 @@ export default function ProductList({ onAddToCart }) {
   const [userRatings, setUserRatings] = useState({}) // Store user's ratings by productId
   const [ratingStates, setRatingStates] = useState({}) // Store UI state for rating
 
+  // Pagination state
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const LIMIT = 20 // products per page
+
  useEffect(() => {
   const fetchProducts = async () => {
     setIsLoading(true)
     try {
+      const payload = { page, limit: LIMIT }
+      if (category) payload.category = category
+
       const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/products/getproduct`
+        `${import.meta.env.VITE_API_BASE_URL}/products/getproduct`,
+        payload,
+        {
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
-      console.log(response.data.data, "response data........");
-      setProducts(response.data.data);
-      
-      // Fetch ratings for all products
-      response.data.data.forEach(product => {
-        fetchProductRatings(product.id);
-      });
-      
-      // If user is logged in, fetch their ratings
-      if (user) {
-        fetchUserAllRatings();
+
+      if (response.data && response.data.success) {
+        setProducts(response.data.data || [])
+        // Debug safeguard: log type/value and only call if it's a function
+        console.log('DEBUG setTotalPages typeof', typeof setTotalPages, setTotalPages)
+        if (typeof setTotalPages === 'function') {
+          setTotalPages(response.data.totalPages || 1)
+        } else {
+          console.warn('setTotalPages is not a function - skipping setTotalPages call', setTotalPages)
+        }
+
+        // Fetch ratings for current page products
+        (response.data.data || []).forEach(product => {
+          fetchProductRatings(product.id)
+        })
+
+        // If user is logged in, fetch their ratings
+        if (user) {
+          fetchUserAllRatings()
+        }
+      } else {
+        setProducts([])
       }
     } catch (error) {
-      console.error(error);
+      console.error(error)
+      setProducts([])
     } finally {
       setIsLoading(false)
     }
-  };
+  }
 
-  fetchProducts();
-}, [user]);
+  fetchProducts()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [user, category, page])
+
+// Reset to first page when category changes
+useEffect(() => {
+  setPage(1)
+}, [category])
 
 
 
-  const filtered = category && category !== 'all'
-    ? products.filter(p => p.category === category)
-    : products
+  // products are fetched from server with optional category filter so we use them directly
+  const filtered = products
 
   const handleBookmarkClick = async (e, product) => {
     e.preventDefault()
@@ -214,44 +243,67 @@ export default function ProductList({ onAddToCart }) {
             <p>No products found</p>
           </div>
         ) : (
-          filtered.map(product => (
-            <div key={product.id} className="product-card">
-              <div className="product-image-wrapper">
-                <div className="bookmark-icon">
-                  <button
-                    className={`bookmark-btn ${isBookmarked(product.id) ? 'bookmarked' : ''}`}
-                    onClick={(e) => handleBookmarkClick(e, product)}
-                    title={isBookmarked(product.id) ? 'Remove bookmark' : 'Add bookmark'}
-                  >
-                    {isBookmarked(product.id) ? '❤️' : '🤍'}
-                  </button>
+          <>
+            {filtered.map(product => (
+              <div key={product.id} className="product-card">
+                <div className="product-image-wrapper">
+                  <div className="bookmark-icon">
+                    <button
+                      className={`bookmark-btn ${isBookmarked(product.id) ? 'bookmarked' : ''}`}
+                      onClick={(e) => handleBookmarkClick(e, product)}
+                      title={isBookmarked(product.id) ? 'Remove bookmark' : 'Add bookmark'}
+                    >
+                      {isBookmarked(product.id) ? '❤️' : '🤍'}
+                    </button>
+                  </div>
+                  <Link to={`/product/${product.id}`} className="view-icon">
+                    👁️
+                  </Link>
+                  <Link to={`/product/${product.id}`} className="product-image">
+                    {product.emoji}
+                  </Link>
                 </div>
-                <Link to={`/product/${product.id}`} className="view-icon">
-                  👁️
-                </Link>
-                <Link to={`/product/${product.id}`} className="product-image">
-                  {product.emoji}
-                </Link>
+                <div className="product-info">
+                  <Link to={`/product/${product.id}`} className="product-link">
+                    <h3 className="product-name">{product.name}</h3>
+                  </Link>
+                  <p className="product-price">Rs {product.price.toFixed(2)}</p>
+                  {renderStarRating(product.id, product.name, true)}
+                </div>
+                <button
+                  className="add-to-cart-btn"
+                  onClick={() => onAddToCart(product)}
+                >
+                  Add To Cart
+                </button>
               </div>
-              <div className="product-info">
-                <Link to={`/product/${product.id}`} className="product-link">
-                  <h3 className="product-name">{product.name}</h3>
-                </Link>
-                <p className="product-price">Rs {product.price.toFixed(2)}</p>
-                {renderStarRating(product.id, product.name, true)}
-              </div>
-              <button
-                className="add-to-cart-btn"
-                onClick={() => onAddToCart(product)}
-              >
-                Add To Cart
-              </button>
-            </div>
-          ))
+            ))}
+
+            {/* Pagination controls */}
+           
+          </>
         )}
 
       
       </div>
+       <div className="pagination" role="navigation" aria-label="Pagination">
+              <button className="pagination-prev-next" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Prev</button>
+
+              <div className="pagination-pages" aria-hidden={false}>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(pNum => (
+                  <button
+                    key={pNum}
+                    className={`page-btn ${page === pNum ? 'active' : ''}`}
+                    onClick={() => setPage(pNum)}
+                    aria-current={page === pNum ? 'page' : undefined}
+                  >
+                    {pNum}
+                  </button>
+                ))}
+              </div>
+
+              <button className="pagination-prev-next" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Next</button>
+            </div>
     </div>
   )
 }
